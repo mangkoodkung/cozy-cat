@@ -1,10 +1,9 @@
 const extensionName = 'cozy-cat';
 
 // =========================================================
-// 🧠 PART 1: MODEL (สมอง - เก็บข้อมูลและคำนวณ)
+// 🧠 PART 1: MODEL (สมอง)
 // =========================================================
 const CatModel = {
-  // 1.1 ค่าคงที่ (Config)
   breeds: [
     { id: 'orange', name: 'แมวส้ม', icon: '🐱' },
     { id: 'siamese', name: 'วิเชียรมาศ', icon: '💎' },
@@ -16,13 +15,11 @@ const CatModel = {
 
   defaultStats: { hunger: 50, happiness: 50, hygiene: 80, energy: 60 },
 
-  // 1.2 ข้อมูลปัจจุบัน (State)
   state: {
     isVisible: true,
-    scene: 'name', // name, breed, main
-    position: { top: 100, left: 100 },
-    history: [], // เก็บประวัติ Log
-
+    scene: 'name',
+    position: { top: 100, left: 100 }, // จำตำแหน่ง
+    history: [],
     currentCat: {
       name: '',
       breed: null,
@@ -31,11 +28,9 @@ const CatModel = {
       health: 'แข็งแรง',
       stats: { hunger: 50, happiness: 50, hygiene: 80, energy: 60 },
     },
-
-    tempBreedSelection: null, // เก็บค่าชั่วคราวตอนเลือกพันธุ์
+    tempBreedSelection: null,
   },
 
-  // 1.3 ฟังก์ชันคำนวณ (Logic)
   utils: {
     getRandomInt: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
     generatePersonality: () => {
@@ -44,7 +39,6 @@ const CatModel = {
     },
   },
 
-  // Actions
   adoptCat: function (breedId) {
     const breed = this.breeds.find(b => b.id === breedId) || this.breeds[0];
     this.state.currentCat.breed = breed;
@@ -59,7 +53,6 @@ const CatModel = {
         date: new Date().toLocaleDateString(),
       });
     }
-    // Reset
     this.state.scene = 'name';
     this.state.currentCat = {
       name: '',
@@ -72,15 +65,13 @@ const CatModel = {
     this.state.tempBreedSelection = null;
   },
 
-  // AI Trigger Scanner
   processChatText: function (text) {
     if (!this.state.currentCat.name || this.state.scene !== 'main') return null;
-
     const lowerText = text.toLowerCase();
     let msg = '';
     let stats = this.state.currentCat.stats;
 
-    // เช็กคำสั่ง (Trigger Words)
+    // Trigger Words Logic
     if (lowerText.match(/(feed|อาหาร|กิน|หิว|ปลา)/)) {
       stats.hunger = Math.min(100, stats.hunger + 20);
       msg = 'Yummy! อิ่มแล้วเหมียว 🐟';
@@ -90,42 +81,38 @@ const CatModel = {
       msg = 'Purr... มีความสุขจัง ❤️';
     } else if (lowerText.match(/(clean|อาบน้ำ|สกปรก|ล้าง)/)) {
       stats.hygiene = 100;
-      stats.happiness = Math.max(0, stats.happiness - 10); // แมวไม่ชอบน้ำ
+      stats.happiness = Math.max(0, stats.happiness - 10);
       msg = 'แง๊ว! (ตัวเปียกหมดแล้ว แต่ก็สะอาดนะ) 🚿';
     } else if (lowerText.match(/(sleep|นอน|พัก|ง่วง)/)) {
       stats.energy = 100;
       msg = 'Zzz... คร่อกฟี้ 💤';
     }
-
     return msg;
   },
 };
 
 // =========================================================
-// 🎨 PART 2: VIEW (หน้าตา - HTML Template)
+// 🎨 PART 2: VIEW (หน้าตา)
 // =========================================================
 const CatView = {
-  // Scene 1: ตั้งชื่อ
   renderNameScene: () => `
-        <div style="text-align:center; padding: 10px;">
-            <h3>ยินดีต้อนรับ! 🐾</h3>
-            <p style="color:#ccc; margin-bottom:10px;">ตั้งชื่อให้น้องแมวตัวใหม่ของคุณ</p>
+        <div style="text-align:center; padding: 5px;">
+            <h3 style="color:#5d4037; margin-top:0;">ยินดีต้อนรับ! 🐾</h3>
+            <p style="color:#795548; margin-bottom:10px; font-size:0.9em;">ตั้งชื่อให้น้องแมวตัวใหม่ของคุณ</p>
             <input type="text" id="input-cat-name" placeholder="เช่น Mochi, ถุงทอง..." 
-                style="width:90%; padding:8px; border-radius:10px; border:1px solid #f48fb1; background:#222; color:white; margin-bottom:15px;">
+                style="width:90%; padding:8px; border-radius:8px; border:2px solid #a1887f; background:#fff; color:#3e2723; margin-bottom:15px; text-align:center;">
             <button id="btn-next-breed" class="cozy-btn">ถัดไป <i class="fa-solid fa-arrow-right"></i></button>
         </div>
     `,
 
-  // Scene 2: เลือกพันธุ์
   renderBreedScene: tempSelection => {
     let gridHTML = `<div class="breed-grid">`;
     CatModel.breeds.forEach(breed => {
       const isSelected = tempSelection?.id === breed.id ? 'selected' : '';
-      // เรียก function global ที่เราจะสร้างด้านล่าง
       gridHTML += `
                 <div class="breed-item ${isSelected}" onclick="window.cozyCatSelectBreed('${breed.id}')">
-                    <div style="font-size:1.5em;">${breed.icon}</div>
-                    <div>${breed.name}</div>
+                    <div style="font-size:1.8em;">${breed.icon}</div>
+                    <div style="font-weight:bold;">${breed.name}</div>
                 </div>
             `;
     });
@@ -133,31 +120,34 @@ const CatView = {
 
     return `
             <div style="padding: 5px;">
-                <div style="text-align:center; margin-bottom:10px;">เลือกสายพันธุ์</div>
+                <div style="text-align:center; margin-bottom:10px; color:#5d4037; font-weight:bold;">เลือกสายพันธุ์</div>
                 ${gridHTML}
                 <div style="display:flex; gap:5px; margin-top:10px;">
                     <button id="btn-back-name" class="cozy-btn secondary" style="flex:1;">กลับ</button>
-                    <button id="btn-confirm-adopt" class="cozy-btn" style="flex:2;" ${tempSelection ? '' : 'disabled'}>
+                    <button id="btn-confirm-adopt" class="cozy-btn" style="flex:2; background:#8d6e63; color:#fff; border-color:#5d4037;" ${
+                      tempSelection ? '' : 'disabled'
+                    }>
                         รับเลี้ยงเลย! <i class="fa-solid fa-heart"></i>
                     </button>
                 </div>
-                <button id="btn-random-adopt" class="cozy-btn secondary" style="margin-top:5px; background:#4caf50; border-color:#81c784;">
+                <button id="btn-random-adopt" class="cozy-btn secondary" style="margin-top:5px;">
                     <i class="fa-solid fa-dice"></i> สุ่มให้หน่อย
                 </button>
             </div>
         `;
   },
 
-  // Scene 3: หน้าหลัก
   renderMainScene: cat => {
+    // ใช้ robohash set 4 (แมว)
     const catImageUrl = `https://robohash.org/${cat.name}${cat.breed.id}?set=set4&size=120x120`;
+
     const bar = (icon, color, val, label) => `
             <div style="margin-bottom: 8px;">
-                <div style="display:flex; justify-content:space-between; font-size:0.85em; margin-bottom:2px; color: ${color};">
+                <div style="display:flex; justify-content:space-between; font-size:0.85em; margin-bottom:2px; color: #4e342e; font-weight:bold;">
                     <span><i class="fa-solid ${icon}"></i> ${label}</span>
                     <span>${val}%</span>
                 </div>
-                <div style="background: rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                <div style="background: rgba(141, 110, 99, 0.2); height:10px; border-radius:5px; overflow:hidden; border:1px solid rgba(141, 110, 99, 0.3);">
                     <div style="width:${val}%; height:100%; background:${color}; border-radius:4px; transition:width 0.5s;"></div>
                 </div>
             </div>
@@ -165,25 +155,25 @@ const CatView = {
 
     return `
             <div style="display:flex; gap:15px; margin-bottom:15px; align-items:center;">
-                <img src="${catImageUrl}" style="background:#fff; border-radius:50%; width:60px; height:60px; border: 3px solid #ec407a; box-shadow:0 0 10px rgba(236,64,122,0.4);">
-                <div style="font-size:0.85em; color:#ddd; flex:1;">
-                    <div style="font-size:1.1em; font-weight:bold; color:#f8bbd0;">${cat.breed.icon} ${
+                <img src="${catImageUrl}" style="background:#fff; border-radius:50%; width:70px; height:70px; border: 3px solid #8d6e63; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                <div style="font-size:0.9em; color:#4e342e; flex:1;">
+                    <div style="font-size:1.2em; font-weight:bold; color:#5d4037;">${cat.breed.icon} ${
       cat.breed.name
     }</div>
-                    <div>นิสัย: <span style="color:#ffcc80;">${cat.personality}</span></div>
-                    <div>สุขภาพ: <span style="color:#81c784;">${cat.health}</span></div>
+                    <div>นิสัย: <span style="color:#d84315;">${cat.personality}</span></div>
+                    <div>สุขภาพ: <span style="color:#388e3c;">${cat.health}</span></div>
                 </div>
             </div>
-            <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;">
+
+            <div style="background:rgba(255,255,255,0.6); padding:10px; border-radius:10px; border:1px dashed #a1887f;">
                 ${bar('fa-fish', '#ffab91', cat.stats.hunger, 'ความหิว')}     
-                ${bar('fa-heart', '#f48fb1', cat.stats.happiness, 'ความสุข')} 
-                ${bar('fa-shower', '#64b5f6', cat.stats.hygiene, 'ความสะอาด')}
-                ${bar('fa-bed', '#80cbc4', cat.stats.energy, 'พลังงาน')}      
+                ${bar('fa-heart', '#ef9a9a', cat.stats.happiness, 'ความสุข')} 
+                ${bar('fa-shower', '#90caf9', cat.stats.hygiene, 'ความสะอาด')}
+                ${bar('fa-bed', '#a5d6a7', cat.stats.energy, 'พลังงาน')}      
             </div>
         `;
   },
 
-  // ประกอบร่าง Overlay
   getOverlayHTML: state => {
     let content = '';
     if (state.scene === 'name') content = CatView.renderNameScene();
@@ -195,14 +185,14 @@ const CatView = {
                 position: fixed; 
                 top: ${state.position.top}px; 
                 left: ${state.position.left}px; 
-                width: 280px; 
+                width: 300px; 
                 z-index: 20000; 
                 display: ${state.isVisible ? 'block' : 'none'};
             ">
                 <div id="cozy-cat-header" class="cozy-header cozy-cursor">
                     <div style="display:flex; align-items:center; gap:8px; pointer-events: none;">
                         <i class="fa-solid fa-paw"></i>
-                        <span>${state.currentCat.name || 'Cozy Cat'}</span>
+                        <span>${state.currentCat.name || 'Cozy Cat Adoption'}</span>
                     </div>
                     <div id="btn-close-overlay" style="cursor:pointer; opacity:0.8;">&times;</div>
                 </div>
@@ -211,16 +201,17 @@ const CatView = {
         `;
   },
 
-  // Settings Panel HTML
   getSettingsPanelHTML: history => {
     let logHTML =
-      history.length === 0 ? `<div style="color:#aaa; text-align:center;">ยังไม่มีประวัติการรับเลี้ยง</div>` : '';
+      history.length === 0
+        ? `<div style="color:#795548; text-align:center; font-style:italic;">ยังไม่มีประวัติการรับเลี้ยง</div>`
+        : '';
 
     history.forEach(cat => {
       logHTML += `
                 <div class="log-item">
                     <span>${cat.breed?.icon || '❓'} <b>${cat.name}</b></span>
-                    <span style="opacity:0.6;">${cat.date}</span>
+                    <span style="opacity:0.8; font-size:0.8em;">${cat.date}</span>
                 </div>
             `;
     });
@@ -234,11 +225,11 @@ const CatView = {
                     </div>
                     <div class="inline-drawer-content">
                         
-                        <div class="styled_description_block" style="background:#263238;">
+                        <div class="styled_description_block" style="background:#5d4037; color:#fff8e1;">
                             <b>🛠️ Mock / Tester</b><br>
                             <small>ทดสอบพิมพ์คำสั่ง เช่น: feed, play, clean</small>
                             <div style="display:flex; gap:5px; margin-top:5px;">
-                                <input type="text" id="mock-chat-input" class="text_pole" placeholder="Try: feed, play, sleep" style="width:100%;">
+                                <input type="text" id="mock-chat-input" class="text_pole" placeholder="Try: feed, play, sleep" style="width:100%; color:#000;">
                                 <div id="btn-mock-send" class="menu_button">Send</div>
                             </div>
                         </div>
@@ -265,31 +256,24 @@ const CatView = {
 };
 
 // =========================================================
-// 🎮 PART 3: CONTROLLER (ผู้จัดการ - เชื่อมต่อทุกอย่าง)
+// 🎮 PART 3: CONTROLLER (ผู้จัดการ + แก้บั๊กลาก)
 // =========================================================
 
-// Global Function สำหรับรับ Click จาก HTML (หน้าเลือกพันธุ์)
 window.cozyCatSelectBreed = id => {
   CatModel.state.tempBreedSelection = CatModel.breeds.find(b => b.id === id);
-  renderOverlay(); // วาดหน้าจอใหม่
+  renderOverlay();
 };
 
 function renderOverlay() {
   $('#cozy-cat-overlay-container').remove();
   $('body').append(`<div id="cozy-cat-overlay-container">${CatView.getOverlayHTML(CatModel.state)}</div>`);
 
-  // Attach Drag Logic
+  // Attach Drag
   const card = document.getElementById('cozy-cat-overlay-card');
   if (card) makeDraggable(card);
 
-  // Bind Events (ปุ่มต่างๆ)
-  bindSceneEvents();
-}
-
-function bindSceneEvents() {
+  // Bind Events
   const state = CatModel.state;
-
-  // SCENE 1: NAME
   if (state.scene === 'name') {
     $('#btn-next-breed').on('click', () => {
       const name = $('#input-cat-name').val().trim();
@@ -298,35 +282,84 @@ function bindSceneEvents() {
       state.scene = 'breed';
       renderOverlay();
     });
-  }
-  // SCENE 2: BREED
-  else if (state.scene === 'breed') {
+  } else if (state.scene === 'breed') {
     $('#btn-back-name').on('click', () => {
       state.scene = 'name';
       renderOverlay();
     });
-
     $('#btn-confirm-adopt').on('click', () => {
       CatModel.adoptCat(state.tempBreedSelection.id);
       renderOverlay();
       toastr.success(`รับเลี้ยงน้อง ${state.currentCat.name} แล้ว!`);
     });
-
     $('#btn-random-adopt').on('click', () => {
       const randomBreed = CatModel.breeds[CatModel.utils.getRandomInt(0, CatModel.breeds.length - 1)];
       CatModel.adoptCat(randomBreed.id);
       renderOverlay();
       toastr.success(`สุ่มได้น้อง ${state.currentCat.breed.name}!`);
     });
-  }
-  // SCENE 3: MAIN
-  else if (state.scene === 'main') {
+  } else if (state.scene === 'main') {
     $('#btn-close-overlay').on('click', () => {
       state.isVisible = false;
       renderOverlay();
     });
   }
 }
+
+// -----------------------------------------------------
+// 🛠️ FIX: New Robust Drag Logic (แก้บั๊กลากหาย)
+// -----------------------------------------------------
+function makeDraggable(element) {
+  const header = document.getElementById('cozy-cat-header');
+  if (!header) return;
+
+  let startX = 0,
+    startY = 0,
+    initialLeft = 0,
+    initialTop = 0;
+
+  header.onmousedown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+
+    // 1. จำจุดเริ่มต้นของเมาส์
+    startX = e.clientX;
+    startY = e.clientY;
+
+    // 2. จำตำแหน่งเริ่มต้นของกล่อง (แปลงเป็น Int ให้ชัวร์)
+    initialLeft = element.offsetLeft;
+    initialTop = element.offsetTop;
+
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+
+    // 3. คำนวณระยะห่างที่เมาส์ขยับ (Delta)
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+
+    // 4. เอาตำแหน่งเดิม + ระยะที่ขยับ = ตำแหน่งใหม่
+    // วิธีนี้จะไม่เพี้ยนเพราะอิงจากจุด Start เสมอ
+    element.style.top = initialTop + deltaY + 'px';
+    element.style.left = initialLeft + deltaX + 'px';
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+
+    // 5. บันทึกตำแหน่งล่าสุดลง State (กันเด้งกลับตอน render ใหม่)
+    CatModel.state.position.top = parseInt(element.style.top);
+    CatModel.state.position.left = parseInt(element.style.left);
+  }
+}
+// -----------------------------------------------------
 
 function renderSettings() {
   $('.cozy-cat-settings').remove();
@@ -356,49 +389,8 @@ function renderSettings() {
   });
 }
 
-function makeDraggable(element) {
-  let pos1 = 0,
-    pos2 = 0,
-    pos3 = 0,
-    pos4 = 0;
-  const header = document.getElementById('cozy-cat-header');
-  if (!header) return;
-
-  header.onmousedown = dragMouseDown;
-
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    const newTop = element.offsetTop - pos2;
-    const newLeft = element.offsetLeft - pos1;
-
-    element.style.top = newTop + 'px';
-    element.style.left = newLeft + 'px';
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-    // บันทึกตำแหน่งลง Model
-    CatModel.state.position.top = element.offsetTop;
-    CatModel.state.position.left = element.offsetLeft;
-  }
-}
-
-// START
 jQuery(async () => {
   renderSettings();
   renderOverlay();
-  console.log(`[${extensionName}] MVC Object-Based Loaded.`);
+  console.log(`[${extensionName}] Cozy Theme + Fixed Drag Loaded.`);
 });
