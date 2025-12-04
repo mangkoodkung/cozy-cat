@@ -1,54 +1,114 @@
 /* style.css */
 
-/* Cursor รูปตีนแมว (SVG Data URI) */
 .cozy-cursor {
     cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewport='0 0 32 32' style='fill:black;font-size:24px;'><text y='50%' x='0'>🐾</text></svg>") 16 16, auto !important;
 }
 
-/* การ์ดหลัก */
+/* ปรับขนาดการ์ดให้ใหญ่ขึ้น */
 .cozy-card {
-    background: rgba(40, 40, 45, 0.95);
-    border: 2px solid #f8bbd0;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(244, 143, 177, 0.3);
+    background: rgba(40, 40, 45, 0.98); /* ทึบขึ้นนิดนึง */
+    border: 3px solid #f8bbd0;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #fff;
     overflow: hidden;
-    transition: transform 0.1s;
+    transition: box-shadow 0.2s;
+    font-size: 14px; /* เพิ่มขนาดตัวอักษรพื้นฐาน */
 }
 
 .cozy-card:hover {
     border-color: #f06292;
+    box-shadow: 0 6px 25px rgba(244, 143, 177, 0.5);
 }
 
-/* ส่วนหัว Header */
 .cozy-header {
     background: linear-gradient(90deg, #ec407a 0%, #f48fb1 100%);
-    padding: 8px 12px;
+    padding: 10px 15px;
     color: white;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 1.1em;
 }
 
-/* ปุ่มกดสไตล์ Cozy */
+.cozy-content {
+    padding: 15px;
+}
+
+/* ปุ่มทั่วไป */
 .cozy-btn {
     background: #fce4ec;
     color: #880e4f;
     border: 1px solid #f48fb1;
     border-radius: 20px;
-    padding: 5px 10px;
+    padding: 8px 12px;
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.9em;
+    font-weight: bold;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 5px;
+    width: 100%;
+    margin-top: 5px;
 }
 
 .cozy-btn:hover {
     background: #f8bbd0;
-    transform: scale(1.05);
+    transform: translateY(-2px);
+}
+
+.cozy-btn.secondary {
+    background: #546e7a;
+    color: white;
+    border: 1px solid #78909c;
+}
+
+/* Grid สำหรับเลือกสายพันธุ์แมว */
+.breed-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.breed-item {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.breed-item:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: #f48fb1;
+}
+
+.breed-item.selected {
+    background: #f48fb1;
+    color: #880e4f;
+    font-weight: bold;
+}
+
+/* Log List */
+.log-list {
+    max-height: 150px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.log-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.9em;
 }
