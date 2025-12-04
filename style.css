@@ -1,114 +1,54 @@
-/* style.css - Theme: Cozy Paper & Coffee (V3) */
+/* style.css */
 
-/* Cursor รูปตีนแมว */
+/* Cursor รูปตีนแมว (SVG Data URI) */
 .cozy-cursor {
-    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewport='0 0 32 32' style='fill:%235d4037;font-size:24px;'><text y='50%' x='0'>🐾</text></svg>") 16 16, auto !important;
+    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewport='0 0 32 32' style='fill:black;font-size:24px;'><text y='50%' x='0'>🐾</text></svg>") 16 16, auto !important;
 }
 
-/* Container หลัก (ใช้กำหนดตำแหน่งและการขยับ) */
-#cozy-cat-overlay-container {
-    position: fixed;
-    z-index: 20000;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Effect เด้งดึ๋ง */
-    user-select: none; /* ป้องกันการคลุมดำโดยไม่ตั้งใจเวลาลาก */
-}
-
-/* --- MODE 1: Card (หน้าจอเต็ม) --- */
+/* การ์ดหลัก */
 .cozy-card {
-    width: 280px; /* ความกว้างการ์ด */
-    background: #fff8e1; /* สีครีมกระดาษ */
-    border: 3px solid #8d6e63; /* ขอบสีน้ำตาล */
+    background: rgba(40, 40, 45, 0.95);
+    border: 2px solid #f8bbd0;
     border-radius: 15px;
-    box-shadow: 5px 5px 0px rgba(93, 64, 55, 0.2); /* เงาแบบแบน */
-    font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif;
-    color: #4e342e;
+    box-shadow: 0 4px 15px rgba(244, 143, 177, 0.3);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
     overflow: hidden;
-    font-size: 14px;
-}
-
-.cozy-header {
-    background: #8d6e63;
-    color: #fff8e1;
-    padding: 8px 12px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px dashed #6d4c41; /* เส้นประเหมือนรอยเย็บ */
-}
-
-/* --- MODE 2: Icon (ปุ่มกลมตอนหด) --- */
-.cozy-icon-mode {
-    width: 60px;
-    height: 60px;
-    background: #fff8e1;
-    border: 3px solid #8d6e63;
-    border-radius: 50%; /* ทำเป็นวงกลม */
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 30px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.cozy-icon-mode:hover {
-    transform: scale(1.1) rotate(10deg); /* หมุนนิดๆ เวลาเอาเมาส์ชี้ */
-    border-color: #5d4037;
-    background: #fff;
-}
-
-/* --- Elements ภายใน --- */
-.cozy-btn {
-    background: #efebe9;
-    color: #5d4037;
-    border: 2px solid #a1887f;
-    border-radius: 12px;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: all 0.2s;
-    text-align: center;
-    font-weight: bold;
-}
-.cozy-btn:hover { 
-    background: #d7ccc8;
-    transform: translateY(-1px);
-}
-
-.cozy-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* พื้นที่รูปภาพสัตว์เลี้ยง (Interactive) */
-.pet-interaction-area {
-    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' style='fill:%23e91e63;font-size:24px;'><text y='50%' x='0'>❤️</text></svg>") 16 16, auto;
     transition: transform 0.1s;
 }
-.pet-interaction-area:active { 
-    transform: scale(0.90); /* กดยุบลงไป */
+
+.cozy-card:hover {
+    border-color: #f06292;
 }
 
-/* Chat Input ใน Overlay */
-.overlay-chat-input {
-    width: 100%;
-    border: none;
-    background: rgba(141, 110, 99, 0.1);
-    border-bottom: 2px solid #8d6e63;
-    padding: 5px;
-    outline: none;
-    color: #5d4037;
-    font-family: inherit;
-}
-.overlay-chat-input::placeholder {
-    color: #a1887f;
+/* ส่วนหัว Header */
+.cozy-header {
+    background: linear-gradient(90deg, #ec407a 0%, #f48fb1 100%);
+    padding: 8px 12px;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-/* Scrollbar ปรับแต่งเองให้เข้าธีม */
-.scroll-area::-webkit-scrollbar { width: 6px; }
-.scroll-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-.scroll-area::-webkit-scrollbar-thumb { background: #a1887f; border-radius: 3px; }
-.scroll-area::-webkit-scrollbar-thumb:hover { background: #8d6e63; }
+/* ปุ่มกดสไตล์ Cozy */
+.cozy-btn {
+    background: #fce4ec;
+    color: #880e4f;
+    border: 1px solid #f48fb1;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.cozy-btn:hover {
+    background: #f8bbd0;
+    transform: scale(1.05);
+}
