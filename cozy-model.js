@@ -1,6 +1,3 @@
-// cozy-model.js
-
-// สร้าง Namespace เพื่อให้ไฟล์อื่นเรียกใช้ได้
 window.CozyCat = window.CozyCat || {};
 
 window.CozyCat.Model = {
@@ -13,18 +10,18 @@ window.CozyCat.Model = {
   ],
 
   icons: [
-    { id: 'paw', icon: '🐾', name: 'Paw' },
-    { id: 'moon', icon: '🌙', name: 'Moon' },
-    { id: 'heart', icon: '💖', name: 'Heart' },
-    { id: 'star', icon: '⭐', name: 'Star' },
-    { id: 'fish', icon: '🐟', name: 'Fish' },
+    { id: 'paw', icon: '🐾' },
+    { id: 'moon', icon: '🌙' },
+    { id: 'heart', icon: '💖' },
+    { id: 'star', icon: '⭐' },
+    { id: 'fish', icon: '🐟' },
   ],
 
   defaultStats: { hunger: 50, happiness: 50, hygiene: 80, energy: 60 },
 
   // State หลัก
   state: {
-    isMasterEnabled: true, // เปิด/ปิด จาก Name Panel
+    isMasterEnabled: true, // Master Switch
     isExpanded: true, // True = หน้าจอเต็ม, False = หดเหลือไอคอน
     currentIcon: 'paw', // ไอคอนที่เลือก
     scene: 'name', // name, breed, main, log
@@ -37,7 +34,6 @@ window.CozyCat.Model = {
       personality: 'Unknown',
       stats: { hunger: 50, happiness: 50, hygiene: 80, energy: 60 },
     },
-
     tempBreedSelection: null,
   },
 
@@ -61,7 +57,6 @@ window.CozyCat.Model = {
     const lower = text.toLowerCase();
     const stats = this.state.currentCat.stats;
     let msg = '';
-
     if (lower.match(/(feed|กิน|หิว)/)) {
       stats.hunger = Math.min(100, stats.hunger + 20);
       msg = 'Yummy! 🐟';

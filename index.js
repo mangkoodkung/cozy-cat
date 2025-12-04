@@ -1,166 +1,157 @@
 // index.js
 
-window.CozyCat = window.CozyCat || {};
-const C = window.CozyCat; // Shortcut
+// รอจนกว่า Model และ View จะพร้อม (ป้องกัน Panel หาย)
+function waitForCozyCat(callback) {
+  const interval = setInterval(() => {
+    if (window.CozyCat && window.CozyCat.Model && window.CozyCat.View) {
+      clearInterval(interval);
+      callback();
+    }
+  }, 100);
+}
 
-C.Controller = {
-  init: function () {
-    this.renderOverlay();
-    this.renderSettings();
-    console.log('[CozyCat] V3 initialized.');
-  },
+waitForCozyCat(() => {
+  const C = window.CozyCat;
 
-  // --- Render Logic ---
-  renderOverlay: function () {
-    $('#cozy-cat-overlay-container').remove();
+  C.Controller = {
+    init: function () {
+      console.log('[CozyCat] Initializing...');
+      this.renderSettings(); // สร้าง Name Panel
+      this.renderOverlay(); // สร้าง Overlay
+      console.log('[CozyCat] Ready!');
+    },
 
-    if (!C.Model.state.isMasterEnabled) return; // ถ้าปิดจาก Name Panel ให้หยุด
+    renderOverlay: function () {
+      $('#cozy-cat-overlay-container').remove();
 
-    const html = C.Model.state.isExpanded
-      ? C.View.renderCard(C.Model.state)
-      : C.View.renderIcon(C.Model.state.currentIcon);
+      if (!C.Model.state.isMasterEnabled) return;
 
-    // สร้าง Container และแปะ HTML
-    const $container = $(`<div id="cozy-cat-overlay-container">${html}</div>`);
+      const html = C.Model.state.isExpanded
+        ? C.View.renderCard(C.Model.state)
+        : C.View.renderIcon(C.Model.state.currentIcon);
 
-    // Restore Position
-    $container.css({
-      top: C.Model.state.position.top + 'px',
-      left: C.Model.state.position.left + 'px',
-    });
+      const $container = $(`<div id="cozy-cat-overlay-container">${html}</div>`);
 
-    $('body').append($container);
-    this.bindEvents();
-    this.makeDraggable($container[0]);
-  },
+      $container.css({
+        top: C.Model.state.position.top + 'px',
+        left: C.Model.state.position.left + 'px',
+      });
 
-  renderSettings: function () {
-    $('.cozy-cat-settings').remove();
-    $('#extensions_settings').append(C.View.renderSettings(C.Model.state));
+      $('body').append($container);
+      this.bindEvents();
+      this.makeDraggable($container[0]);
+    },
 
-    // Settings Events
-    $('#btn-master-toggle').on('click', () => {
-      C.Model.state.isMasterEnabled = !C.Model.state.isMasterEnabled;
+    renderSettings: function () {
+      $('.cozy-cat-settings').remove();
+      // เช็กว่า SillyTavern เตรียมกล่องไว้ให้หรือยัง
+      if ($('#extensions_settings').length === 0) return;
+
+      $('#extensions_settings').append(C.View.renderSettings(C.Model.state));
+
+      $('#btn-master-toggle').on('click', () => {
+        C.Model.state.isMasterEnabled = !C.Model.state.isMasterEnabled;
+        this.renderOverlay();
+        this.renderSettings();
+      });
+      $('#btn-hard-reset').on('click', () => {
+        if (confirm('ล้างข้อมูลทั้งหมด?')) {
+          C.Model.state.history = [];
+          C.Model.retireCat();
+          this.renderOverlay();
+          this.renderSettings();
+        }
+      });
+    },
+
+    nav: function (target) {
+      if (target === 'retire') {
+        if (confirm('จบการเลี้ยงน้องตัวนี้?')) C.Model.retireCat();
+      } else {
+        C.Model.state.scene = target;
+      }
       this.renderOverlay();
+    },
+
+    selectBreed: function (id) {
+      C.Model.state.tempBreedSelection = C.Model.breeds.find(b => b.id === id);
+      this.renderOverlay();
+    },
+
+    changeIcon: function (id) {
+      C.Model.setIcon(id);
       this.renderSettings();
-    });
-    $('#btn-hard-reset').on('click', () => {
-      if (confirm('ล้างข้อมูลทั้งหมด?')) {
-        C.Model.state.history = [];
-        C.Model.retireCat();
+      if (!C.Model.state.isExpanded) this.renderOverlay();
+    },
+
+    bindEvents: function () {
+      $('#cozy-overlay-trigger').on('click', () => {
+        C.Model.toggleExpand();
         this.renderOverlay();
-      }
-    });
-  },
-
-  // --- Actions ---
-  nav: function (target) {
-    if (target === 'retire') {
-      if (confirm('จบการเลี้ยงน้องตัวนี้?')) C.Model.retireCat();
-    } else {
-      C.Model.state.scene = target;
-    }
-    this.renderOverlay();
-  },
-
-  selectBreed: function (id) {
-    C.Model.state.tempBreedSelection = C.Model.breeds.find(b => b.id === id);
-    this.renderOverlay();
-  },
-
-  changeIcon: function (id) {
-    C.Model.setIcon(id);
-    this.renderSettings();
-    if (!C.Model.state.isExpanded) this.renderOverlay(); // อัปเดตทันทีถ้าหดอยู่
-  },
-
-  // --- Events ---
-  bindEvents: function () {
-    // 1. กดที่ไอคอนเพื่อขยาย
-    $('#cozy-overlay-trigger').on('click', () => {
-      C.Model.toggleExpand();
-      this.renderOverlay();
-    });
-
-    // 2. กดปุ่มหด
-    $('#btn-shrink-overlay').on('click', () => {
-      C.Model.toggleExpand();
-      this.renderOverlay();
-    });
-
-    // 3. Name Scene
-    $('#btn-next-breed').on('click', () => {
-      const val = $('#input-cat-name').val();
-      if (val) {
-        C.Model.state.currentCat.name = val;
-        C.Model.state.scene = 'breed';
+      });
+      $('#btn-shrink-overlay').on('click', () => {
+        C.Model.toggleExpand();
         this.renderOverlay();
+      });
+      $('#btn-next-breed').on('click', () => {
+        const val = $('#input-cat-name').val();
+        if (val) {
+          C.Model.state.currentCat.name = val;
+          C.Model.state.scene = 'breed';
+          this.renderOverlay();
+        }
+      });
+      $('#btn-adopt-confirm').on('click', () => {
+        C.Model.adoptCat(C.Model.state.tempBreedSelection.id);
+        this.renderOverlay();
+      });
+      $('#pet-image-click').on('click', () => {
+        const msg = C.Model.petAnimal();
+        toastr.success(msg);
+        this.renderOverlay();
+      });
+      $('#btn-pet-chat-send').on('click', () => {
+        const txt = $('#pet-chat-input').val();
+        const reply = C.Model.processChat(txt);
+        if (reply) toastr.success(reply, C.Model.state.currentCat.name + ' Says:');
+        this.renderOverlay();
+      });
+    },
+
+    makeDraggable: function (element) {
+      const handle = C.Model.state.isExpanded ? document.getElementById('cozy-header-drag') : element;
+
+      if (!handle) return;
+
+      let startX, startY, initLeft, initTop;
+
+      handle.onmousedown = e => {
+        e.preventDefault();
+        startX = e.clientX;
+        startY = e.clientY;
+        initLeft = element.offsetLeft;
+        initTop = element.offsetTop;
+        document.onmouseup = closeDrag;
+        document.onmousemove = drag;
+      };
+
+      function drag(e) {
+        e.preventDefault();
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        element.style.left = initLeft + dx + 'px';
+        element.style.top = initTop + dy + 'px';
       }
-    });
 
-    // 4. Breed Scene
-    $('#btn-adopt-confirm').on('click', () => {
-      C.Model.adoptCat(C.Model.state.tempBreedSelection.id);
-      this.renderOverlay();
-    });
+      function closeDrag() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+        C.Model.state.position.left = element.offsetLeft;
+        C.Model.state.position.top = element.offsetTop;
+      }
+    },
+  };
 
-    // 5. Main Scene - Petting
-    $('#pet-image-click').on('click', () => {
-      const msg = C.Model.petAnimal();
-      toastr.success(msg);
-      this.renderOverlay();
-    });
-
-    // 6. Main Scene - Chat Input
-    $('#btn-pet-chat-send').on('click', () => {
-      const txt = $('#pet-chat-input').val();
-      const reply = C.Model.processChat(txt);
-      if (reply) toastr.success(reply, C.Model.state.currentCat.name + ' Says:');
-      this.renderOverlay();
-    });
-  },
-
-  // --- Draggable Logic ---
-  makeDraggable: function (element) {
-    // ถ้าหดอยู่ให้จับที่ตัว Icon, ถ้าขยายให้จับที่ Header
-    const handle = C.Model.state.isExpanded ? document.getElementById('cozy-header-drag') : element;
-
-    if (!handle) return;
-
-    let startX, startY, initLeft, initTop;
-
-    handle.onmousedown = e => {
-      e.preventDefault();
-      startX = e.clientX;
-      startY = e.clientY;
-      initLeft = element.offsetLeft;
-      initTop = element.offsetTop;
-      document.onmouseup = closeDrag;
-      document.onmousemove = drag;
-    };
-
-    function drag(e) {
-      e.preventDefault();
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      element.style.left = initLeft + dx + 'px';
-      element.style.top = initTop + dy + 'px';
-    }
-
-    function closeDrag() {
-      document.onmouseup = null;
-      document.onmousemove = null;
-      // Save Position
-      C.Model.state.position.left = element.offsetLeft;
-      C.Model.state.position.top = element.offsetTop;
-    }
-  },
-};
-
-// Start
-jQuery(async () => {
-  // รอให้ไฟล์อื่นๆ โหลดเสร็จก่อน (เผื่อความชัวร์)
-  setTimeout(() => {
-    window.CozyCat.Controller.init();
-  }, 500);
+  // Start
+  C.Controller.init();
 });

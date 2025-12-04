@@ -1,8 +1,7 @@
-// cozy-view.js
 window.CozyCat = window.CozyCat || {};
 
 window.CozyCat.View = {
-  // ส่วน ICON (ตอนหด)
+  // --- ICON MODE ---
   renderIcon: iconId => {
     const iconObj = window.CozyCat.Model.icons.find(i => i.id === iconId) || window.CozyCat.Model.icons[0];
     return `
@@ -12,11 +11,9 @@ window.CozyCat.View = {
         `;
   },
 
-  // ส่วน CARD (ตอนขยาย)
+  // --- CARD MODE ---
   renderCard: state => {
     let content = '';
-
-    // Router ภายใน Card
     if (state.scene === 'name') content = window.CozyCat.View.sceneName();
     else if (state.scene === 'breed') content = window.CozyCat.View.sceneBreed(state.tempBreedSelection);
     else if (state.scene === 'main') content = window.CozyCat.View.sceneMain(state.currentCat);
@@ -28,7 +25,7 @@ window.CozyCat.View = {
                     <div style="display:flex; align-items:center; gap:5px;">
                         <span>${state.currentCat.name || 'Adoption Center'}</span>
                     </div>
-                    <div id="btn-shrink-overlay" style="cursor:pointer;">
+                    <div id="btn-shrink-overlay" style="cursor:pointer;" title="ย่อเหลือไอคอน">
                         <i class="fa-solid fa-compress"></i>
                     </div>
                 </div>
@@ -38,7 +35,6 @@ window.CozyCat.View = {
   },
 
   // --- Sub-Scenes ---
-
   sceneName: () => `
         <div style="text-align:center;">
             <h3>ยินดีต้อนรับ! 🏠</h3>
@@ -69,27 +65,21 @@ window.CozyCat.View = {
                     <div style="width:${val}%; height:100%; background:${color}; border-radius:4px; transition:width 0.3s;"></div>
                 </div>
             </div>`;
-
     return `
             <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <img src="${imgUrl}" class="pet-interaction-area" id="pet-image-click" 
-                     style="width:70px; height:70px; border-radius:50%; border:3px solid #8d6e63; background:#fff;">
+                <img src="${imgUrl}" class="pet-interaction-area" id="pet-image-click" style="width:70px; height:70px; border-radius:50%; border:3px solid #8d6e63; background:#fff;">
                 <div style="font-size:0.9em;">
                     <div><b>${cat.breed.icon} ${cat.breed.name}</b></div>
                     <div style="color:#d84315;">นิสัย: ${cat.personality}</div>
-                    <div style="font-size:0.8em; color:#aaa;">(คลิกที่รูปเพื่อลูบหัว)</div>
                 </div>
             </div>
-
             ${bar('#ffab91', cat.stats.hunger, '🐟')}
             ${bar('#f48fb1', cat.stats.happiness, '❤️')}
             ${bar('#a5d6a7', cat.stats.energy, '💤')}
-
             <div style="margin-top:10px; display:flex; gap:5px;">
                 <input type="text" id="pet-chat-input" class="overlay-chat-input" placeholder="คุยกับน้อง... (feed, play)">
                 <button id="btn-pet-chat-send" class="cozy-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
-
             <div style="margin-top:10px; display:flex; justify-content:space-between; border-top:1px dashed #a1887f; padding-top:5px;">
                 <span onclick="window.CozyCat.Controller.nav('log')" style="cursor:pointer; font-size:0.8em;"><i class="fa-solid fa-book"></i> สมุดบันทึก</span>
                 <span onclick="window.CozyCat.Controller.nav('retire')" style="cursor:pointer; font-size:0.8em; color:#d32f2f;"><i class="fa-solid fa-door-open"></i> จบการเลี้ยง</span>
@@ -108,7 +98,7 @@ window.CozyCat.View = {
     return html;
   },
 
-  // --- Name Panel (Settings) ---
+  // --- NAME PANEL (SETTINGS) ---
   renderSettings: state => {
     let iconSelector = `<div style="display:flex; gap:5px; justify-content:center; margin-bottom:10px;">`;
     window.CozyCat.Model.icons.forEach(i => {
@@ -136,7 +126,7 @@ window.CozyCat.View = {
                         <div style="display:flex; flex-direction:column; gap:5px;">
                             <button id="btn-master-toggle" class="menu_button">
                                 <i class="fa-solid fa-power-off"></i> ${
-                                  state.isMasterEnabled ? 'ซ่อน Overlay ทั้งหมด' : 'เปิด Overlay'
+                                  state.isMasterEnabled ? 'ซ่อน Overlay (Master Off)' : 'เปิด Overlay'
                                 }
                             </button>
                             <button id="btn-hard-reset" class="menu_button" style="background:#d32f2f; color:white;">
