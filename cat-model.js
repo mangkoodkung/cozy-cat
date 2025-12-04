@@ -1,42 +1,99 @@
-// cat-model.js
+// cozy-model.js
 
-export const catData = {
-  name: 'Mochi',
-  age: 1,
-  appearance: 'Unknown',
-  personality: 'Unknown',
-  health: 'แข็งแรง',
-  stats: {
-    hunger: 50,
-    happiness: 50,
-    hygiene: 80,
-    energy: 60,
+// สร้าง Namespace เพื่อให้ไฟล์อื่นเรียกใช้ได้
+window.CozyCat = window.CozyCat || {};
+
+window.CozyCat.Model = {
+  // Config
+  breeds: [
+    { id: 'orange', name: 'แมวส้ม', icon: '🐱' },
+    { id: 'siamese', name: 'วิเชียรมาศ', icon: '💎' },
+    { id: 'persian', name: 'เปอร์เซีย', icon: '🦁' },
+    { id: 'black', name: 'แมวดำ', icon: '🐈‍⬛' },
+  ],
+
+  icons: [
+    { id: 'paw', icon: '🐾', name: 'Paw' },
+    { id: 'moon', icon: '🌙', name: 'Moon' },
+    { id: 'heart', icon: '💖', name: 'Heart' },
+    { id: 'star', icon: '⭐', name: 'Star' },
+    { id: 'fish', icon: '🐟', name: 'Fish' },
+  ],
+
+  defaultStats: { hunger: 50, happiness: 50, hygiene: 80, energy: 60 },
+
+  // State หลัก
+  state: {
+    isMasterEnabled: true, // เปิด/ปิด จาก Name Panel
+    isExpanded: true, // True = หน้าจอเต็ม, False = หดเหลือไอคอน
+    currentIcon: 'paw', // ไอคอนที่เลือก
+    scene: 'name', // name, breed, main, log
+    position: { top: 100, left: 100 },
+    history: [],
+
+    currentCat: {
+      name: '',
+      breed: null,
+      personality: 'Unknown',
+      stats: { hunger: 50, happiness: 50, hygiene: 80, energy: 60 },
+    },
+
+    tempBreedSelection: null,
+  },
+
+  // Actions
+  toggleExpand: function () {
+    this.state.isExpanded = !this.state.isExpanded;
+  },
+
+  setIcon: function (iconId) {
+    this.state.currentIcon = iconId;
+  },
+
+  petAnimal: function () {
+    const stats = this.state.currentCat.stats;
+    stats.happiness = Math.min(100, stats.happiness + 5);
+    stats.energy = Math.max(0, stats.energy - 2);
+    return '❤️ รักนะเหมียว~';
+  },
+
+  processChat: function (text) {
+    const lower = text.toLowerCase();
+    const stats = this.state.currentCat.stats;
+    let msg = '';
+
+    if (lower.match(/(feed|กิน|หิว)/)) {
+      stats.hunger = Math.min(100, stats.hunger + 20);
+      msg = 'Yummy! 🐟';
+    } else if (lower.match(/(sleep|นอน)/)) {
+      stats.energy = 100;
+      msg = 'Zzz... 💤';
+    }
+    return msg;
+  },
+
+  adoptCat: function (breedId) {
+    const breed = this.breeds.find(b => b.id === breedId);
+    this.state.currentCat.breed = breed;
+    this.state.currentCat.personality = ['ขี้อ้อน', 'ซน', 'หยิ่ง'][Math.floor(Math.random() * 3)];
+    this.state.scene = 'main';
+    this.state.isExpanded = true;
+  },
+
+  retireCat: function () {
+    if (this.state.currentCat.name) {
+      this.state.history.push({
+        ...this.state.currentCat,
+        date: new Date().toLocaleDateString(),
+      });
+    }
+    // Reset
+    this.state.scene = 'name';
+    this.state.currentCat = {
+      name: '',
+      breed: null,
+      personality: '',
+      stats: { ...this.defaultStats },
+    };
   },
 };
-
-const catBreeds = ['แมวส้มลายสลิด', 'วิเชียรมาศ', 'เปอร์เซียสีขาว', 'สามสี (Calico)', 'สีดำปลอด', 'สก็อตติชโฟลด์'];
-const catTraits = ['ขี้อ้อนชอบนวด', 'นอนทั้งวัน', 'ซุกซนชอบทำของตก', 'หยิ่งๆ แต่รักนะ', 'ตะกละกินเก่ง'];
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-export function generateRandomCat() {
-  const randomBreed = catBreeds[getRandomInt(0, catBreeds.length - 1)];
-  const randomTrait = catTraits[getRandomInt(0, catTraits.length - 1)];
-
-  catData.age = getRandomInt(1, 15);
-  catData.appearance = randomBreed;
-  catData.personality = randomTrait;
-
-  catData.stats.hunger = getRandomInt(20, 90);
-  catData.stats.happiness = getRandomInt(30, 100);
-  catData.stats.hygiene = getRandomInt(40, 100);
-  catData.stats.energy = getRandomInt(10, 100);
-
-  return catData; // ส่งข้อมูลที่อัปเดตแล้วกลับไป
-}
-
-export function updateCatName(newName) {
-  catData.name = newName;
-}

@@ -3,7 +3,7 @@
   "loading_order": 50,
   "requires": [],
   "optional": [],
-  "js": "index.js",
+  "js": ["cozy-model.js", "cozy-view.js", "index.js"],
   "css": "style.css",
   "author": "Popko",
   "version": "0.5 (Beta)",
