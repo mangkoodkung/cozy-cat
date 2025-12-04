@@ -1,10 +1,10 @@
 // index.js
 
-// รอให้ Model/View โหลดเสร็จก่อน
+// รอจนกว่า Model และ View จะพร้อม (ป้องกัน Panel หาย)
 function waitForCozyCat(callback) {
-  const check = setInterval(() => {
+  const interval = setInterval(() => {
     if (window.CozyCat && window.CozyCat.Model && window.CozyCat.View) {
-      clearInterval(check);
+      clearInterval(interval);
       callback();
     }
   }, 100);
@@ -16,61 +16,22 @@ waitForCozyCat(() => {
   C.Controller = {
     init: function () {
       console.log('[CozyCat] Initializing...');
-      this.loadSettings(); // <--- เรียกฟังก์ชันสร้าง Panel ตรงนี้
-      this.renderOverlay();
+      this.renderSettings(); // สร้าง Name Panel
+      this.renderOverlay(); // สร้าง Overlay
+      console.log('[CozyCat] Ready!');
     },
 
-    // ----------------------------------------------------------
-    // 🔥 ฟังก์ชัน loadSettings ที่คุณต้องการ
-    // ----------------------------------------------------------
-    loadSettings: function () {
-      // 1. ลบของเก่าก่อนเสมอ
-      $('.cozy-cat-settings').remove();
-
-      // 2. เช็กว่า SillyTavern มีกล่อง extension settings ไหม
-      if ($('#extensions_settings').length === 0) {
-        console.error('Extension settings container not found!');
-        return;
-      }
-
-      // 3. ดึง HTML จาก View มาแปะ
-      const html = C.View.getSettingsPanelHTML(C.Model.state);
-      $('#extensions_settings').append(html);
-
-      // 4. ผูก Events ของปุ่มใน Panel
-      $('#btn-master-toggle').on('click', () => {
-        C.Model.state.isMasterEnabled = !C.Model.state.isMasterEnabled;
-        this.renderOverlay(); // อัปเดตตัว Overlay (ซ่อน/แสดง)
-        this.loadSettings(); // อัปเดตตัว Panel เอง (เพื่อเปลี่ยนข้อความปุ่ม)
-        toastr.info(C.Model.state.isMasterEnabled ? 'เปิด Overlay แล้ว' : 'ปิด Overlay แล้ว');
-      });
-
-      $('#btn-hard-reset').on('click', () => {
-        if (confirm('ยืนยันล้างข้อมูลและประวัติทั้งหมด?')) {
-          C.Model.state.history = [];
-          C.Model.retireCat();
-          this.renderOverlay();
-          this.loadSettings(); // อัปเดต Panel (เพื่อเคลียร์สถานะอื่นๆ ถ้ามี)
-          toastr.warning('ล้างข้อมูลเรียบร้อย');
-        }
-      });
-    },
-
-    // --- Render Overlay (ส่วนแสดงผลบนหน้าจอ) ---
     renderOverlay: function () {
       $('#cozy-cat-overlay-container').remove();
 
-      // ถ้าปิด Master Switch อยู่ ไม่ต้องวาดอะไรเลย
       if (!C.Model.state.isMasterEnabled) return;
 
-      // เลือกว่าจะวาดแบบ Card หรือ Icon
       const html = C.Model.state.isExpanded
         ? C.View.renderCard(C.Model.state)
         : C.View.renderIcon(C.Model.state.currentIcon);
 
       const $container = $(`<div id="cozy-cat-overlay-container">${html}</div>`);
 
-      // คืนตำแหน่งเดิม
       $container.css({
         top: C.Model.state.position.top + 'px',
         left: C.Model.state.position.left + 'px',
@@ -81,13 +42,26 @@ waitForCozyCat(() => {
       this.makeDraggable($container[0]);
     },
 
-    // --- Actions ---
-    changeIcon: function (id) {
-      C.Model.setIcon(id);
-      this.loadSettings(); // รีโหลด Panel เพื่ออัปเดตกรอบสีที่เลือก
-      if (!C.Model.state.isExpanded) {
-        this.renderOverlay(); // ถ้าย่ออยู่ ให้อัปเดตไอคอนบนจอทันที
-      }
+    renderSettings: function () {
+      $('.cozy-cat-settings').remove();
+      // เช็กว่า SillyTavern เตรียมกล่องไว้ให้หรือยัง
+      if ($('#extensions_settings').length === 0) return;
+
+      $('#extensions_settings').append(C.View.renderSettings(C.Model.state));
+
+      $('#btn-master-toggle').on('click', () => {
+        C.Model.state.isMasterEnabled = !C.Model.state.isMasterEnabled;
+        this.renderOverlay();
+        this.renderSettings();
+      });
+      $('#btn-hard-reset').on('click', () => {
+        if (confirm('ล้างข้อมูลทั้งหมด?')) {
+          C.Model.state.history = [];
+          C.Model.retireCat();
+          this.renderOverlay();
+          this.renderSettings();
+        }
+      });
     },
 
     nav: function (target) {
@@ -104,15 +78,21 @@ waitForCozyCat(() => {
       this.renderOverlay();
     },
 
-    // --- Event Binding ---
+    changeIcon: function (id) {
+      C.Model.setIcon(id);
+      this.renderSettings();
+      if (!C.Model.state.isExpanded) this.renderOverlay();
+    },
+
     bindEvents: function () {
-      // ปุ่มย่อ/ขยาย
-      $('#cozy-overlay-trigger, #btn-shrink-overlay').on('click', () => {
+      $('#cozy-overlay-trigger').on('click', () => {
         C.Model.toggleExpand();
         this.renderOverlay();
       });
-
-      // Flow การเลี้ยง
+      $('#btn-shrink-overlay').on('click', () => {
+        C.Model.toggleExpand();
+        this.renderOverlay();
+      });
       $('#btn-next-breed').on('click', () => {
         const val = $('#input-cat-name').val();
         if (val) {
@@ -125,8 +105,6 @@ waitForCozyCat(() => {
         C.Model.adoptCat(C.Model.state.tempBreedSelection.id);
         this.renderOverlay();
       });
-
-      // Interaction
       $('#pet-image-click').on('click', () => {
         const msg = C.Model.petAnimal();
         toastr.success(msg);
@@ -140,12 +118,13 @@ waitForCozyCat(() => {
       });
     },
 
-    // --- Draggable ---
     makeDraggable: function (element) {
       const handle = C.Model.state.isExpanded ? document.getElementById('cozy-header-drag') : element;
+
       if (!handle) return;
 
       let startX, startY, initLeft, initTop;
+
       handle.onmousedown = e => {
         e.preventDefault();
         startX = e.clientX;
@@ -155,11 +134,15 @@ waitForCozyCat(() => {
         document.onmouseup = closeDrag;
         document.onmousemove = drag;
       };
+
       function drag(e) {
         e.preventDefault();
-        element.style.left = initLeft + (e.clientX - startX) + 'px';
-        element.style.top = initTop + (e.clientY - startY) + 'px';
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        element.style.left = initLeft + dx + 'px';
+        element.style.top = initTop + dy + 'px';
       }
+
       function closeDrag() {
         document.onmouseup = null;
         document.onmousemove = null;
@@ -169,6 +152,6 @@ waitForCozyCat(() => {
     },
   };
 
-  // Run!
+  // Start
   C.Controller.init();
 });
