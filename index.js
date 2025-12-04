@@ -1,56 +1,74 @@
-// 1. ตั้งชื่อตัวแปรให้ตรงกับชื่อโฟลเดอร์ Extension ของคุณ (Case-sensitive ตัวเล็กตัวใหญ่ต้องเป๊ะ)
 const extensionName = 'cozy cat';
 
-// 2. สร้างตัวแปรชี้เป้าไปยัง ID ที่ SillyTavern เตรียมไว้ให้
-const extensionSettingsId = `#extensions_settings_${extensionName}`;
+// 1. ตั้งค่าพื้นฐาน (อัปเดตชื่อผู้สร้าง)
+const authorConfig = {
+  name: 'Popko',
+  avatarUrl: '', // ถ้ามีลิงก์รูปใส่ตรงนี้ได้ครับ
+};
 
-// 3. ฟังก์ชันสร้างหน้าตา UI
+// 2. ฟังก์ชันสร้างหน้าเมนู
 function loadSettings() {
-  // ล้างค่าเก่าออกก่อน (ป้องกันปุ่มซ้อนกันเวลาโหลดซ้ำ)
-  $(extensionSettingsId).empty();
+  // ลบของเก่าทิ้งก่อน (ป้องกันเมนูซ้อน)
+  $('.cozy-cat-settings').remove();
 
-  // สร้าง HTML (สังเกตเครื่องหมาย ` ` ที่ครอบอยู่ เรียกว่า Backticks)
+  // HTML ของหน้าเมนู
   const settingsHtml = `
-        <div class="my-extension-settings">
+        <div class="cozy-cat-settings">
             <div class="inline-drawer">
                 <div class="inline-drawer-toggle inline-drawer-header">
-                    <b>My Cool Extension Settings</b>
+                    <b>✨ Cozy Cat ✨ (Test Mode)</b>
                     <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
                 </div>
-                
+
                 <div class="inline-drawer-content">
-                    <label class="checkbox_label">
-                        <input type="checkbox" id="my-feature-toggle">
-                        เปิดใช้งานฟีเจอร์ลับ
-                    </label>
-                    <br>
-                    <label>ข้อความทักทาย:</label>
-                    <textarea id="my-text-input" class="text_pole" rows="2"></textarea>
+                    <div class="styled_description_block">
+                        Extension by ${authorConfig.name} <br>
+                        <small>สถานะ: ทดสอบ UI</small>
+                    </div>
                     
-                    <hr>
-                    <button id="my-save-button" class="menu_button">บันทึกการตั้งค่า</button>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        
+                        <div id="test-btn-auto" class="menu_button" style="flex:1; background-color: #ffb7b2; color: #5d4037;">
+                            <i class="fa-solid fa-paw"></i> Meow Auto
+                        </div>
+
+                        <div id="test-btn-editor" class="menu_button" style="flex:1;">
+                            <i class="fa-solid fa-pen-nib"></i> Editor
+                        </div>
+
+                        <div id="test-btn-split" class="menu_button" style="flex:1;">
+                            <i class="fa-solid fa-scissors"></i> Split
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
-  // 4. เอา HTML ไปแปะใส่ในกล่องที่ SillyTavern เตรียมไว้
-  $(extensionSettingsId).append(settingsHtml);
+  // สั่งแปะ HTML ลงไปใน SillyTavern
+  $('#extensions_settings').append(settingsHtml);
 
-  // 5. ใส่ลูกเล่นให้ปุ่ม (Event Listeners)
-  $('#my-save-button').on('click', () => {
-    // ดึงค่าจากช่อง Input
-    const isChecked = $('#my-feature-toggle').is(':checked');
-    const textValue = $('#my-text-input').val();
+  // --- โซนทดสอบปุ่ม ---
 
-    console.log('บันทึกแล้ว!', isChecked, textValue);
-    toastr.success('บันทึกการตั้งค่าเรียบร้อย!'); // แจ้งเตือนสวยๆ แบบ SillyTavern
+  $('#test-btn-auto').on('click', () => {
+    toastr.success('Meow! ปุ่ม Auto ทำงานแล้ว', 'Popko Says:');
+    console.log('Auto Clicked');
+  });
 
-    // ตรงนี้คุณต้องเขียนโค้ดเพื่อเซฟลงตัวแปร หรือ localStorage ต่อไป
+  $('#test-btn-editor').on('click', () => {
+    toastr.info('เปิดหน้า Editor...', 'Popko Says:');
+    console.log('Editor Clicked');
+  });
+
+  $('#test-btn-split').on('click', () => {
+    toastr.warning('เปิดโหมดตัดแบ่ง...', 'Popko Says:');
+    console.log('Split Clicked');
   });
 }
 
-// 6. สั่งรันเมื่อโหลดเสร็จ
+// 3. สั่งรันเมื่อ SillyTavern โหลดเสร็จ
 jQuery(async () => {
   loadSettings();
+  console.log(`[${extensionName}] by ${authorConfig.name} is Ready.`);
 });
