@@ -1,46 +1,63 @@
-// 1. ตั้งค่าชื่อ Extension และ ผู้สร้าง (ให้ตรงกับ manifest)
-const extensionName = 'cozy-cat';
-const authorName = 'Popko';
+// index.js
 
-// 2. ฟังก์ชันสร้างหน้าต่างตั้งค่า (Settings Panel)
+import { catData, generateRandomCat, updateCatName } from './cat-model.js';
+import { getCatPanelHTML } from './cat-view.js';
+
+const extensionName = 'cozy-cat';
+
+// ฟังก์ชันวาดหน้าจอ (Controller Logic)
+function render() {
+  // 1. สร้าง HTML จาก View
+  const html = getCatPanelHTML(catData);
+
+  // 2. แปะลงไปใน DOM
+  $('#cozy-cat-content').html(html);
+
+  // 3. ผูก Event Listeners (Logic การกดปุ่ม)
+  $('#cat-name-input').on('input', function () {
+    const newName = $(this).val();
+    updateCatName(newName);
+
+    // อัปเดตรูปแบบ Real-time
+    const newImg = `https://robohash.org/${newName}?set=set4&size=100x100`;
+    $('img[src*="robohash"]').attr('src', newImg);
+  });
+
+  $('#btn-random-cat').on('click', () => {
+    generateRandomCat(); // อัปเดตข้อมูลใน Model
+    render(); // วาดหน้าจอใหม่
+  });
+}
+
 function loadSettings() {
-  // ลบ Panel เก่าออกก่อน (ป้องกันการซ้อนทับเวลา Reload)
   $('.cozy-cat-settings').remove();
 
-  // สร้าง HTML ของ Panel
   const settingsHtml = `
         <div class="cozy-cat-settings">
             <div class="inline-drawer">
-                
                 <div class="inline-drawer-toggle inline-drawer-header">
                     <b>✨ Cozy Cat ✨</b>
                     <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
                 </div>
-
                 <div class="inline-drawer-content">
-                    
-                    <div class="styled_description_block">
-                        cat cat cat cat<br>
-                        <small>Created by ${authorName} (v2.0.0)</small>
-                    </div>
-
-                    <hr>
-
-                    <div style="text-align: center; color: #aaa; padding: 10px;">
-                        <i>(พื้นที่สำหรับวางปุ่มควบคุมในอนาคต)</i>
-                    </div>
-
+                    <div id="cozy-cat-content"></div>
                 </div>
             </div>
         </div>
     `;
 
-  // นำ HTML ไปแปะใส่ในหน้า Settings ของ SillyTavern
   $('#extensions_settings').append(settingsHtml);
+
+  // เริ่มต้นทำงาน
+  if (catData.appearance === 'Unknown') {
+    generateRandomCat();
+  }
+  render();
 }
 
-// 3. สั่งให้ทำงานเมื่อ SillyTavern โหลดเสร็จ
 jQuery(async () => {
+  // หมายเหตุ: SillyTavern บางเวอร์ชันอาจต้องโหลด Module แบบพิเศษ
+  // แต่ลองแบบนี้ดูก่อนครับ เป็นมาตรฐาน ES6
   loadSettings();
-  console.log(`[${extensionName}] Extension Loaded!`);
+  console.log(`[${extensionName}] MVC Loaded.`);
 });
